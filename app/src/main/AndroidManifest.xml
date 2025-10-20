@@ -12,7 +12,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NeuraTask">
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.SplashActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.EmptyPageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.NotificationsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.AddAssignmentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.SignupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
