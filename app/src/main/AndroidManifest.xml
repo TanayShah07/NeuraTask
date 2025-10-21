@@ -27,7 +27,7 @@
             android:name=".activities.EmptyPageActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.ProfileActivity"
+            android:name=".activities.fragments.ProfileFragment"
             android:exported="false" />
         <activity
             android:name=".activities.NotificationsActivity"

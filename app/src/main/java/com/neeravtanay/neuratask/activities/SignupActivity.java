@@ -20,10 +20,9 @@ public class SignupActivity extends AppCompatActivity {
     TextView loginRedirect;
     FirebaseAuth mAuth;
     FirebaseFirestore db;
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void onCreate(Bundle s) {
+        super.onCreate(s);
         setContentView(R.layout.activity_signup);
         nameField = findViewById(R.id.nameField);
         ageField = findViewById(R.id.ageField);
@@ -33,39 +32,33 @@ public class SignupActivity extends AppCompatActivity {
         loginRedirect = findViewById(R.id.loginRedirect);
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-
         signupButton.setOnClickListener(v -> registerUser());
         loginRedirect.setOnClickListener(v -> {
             startActivity(new Intent(SignupActivity.this, LoginActivity.class));
             finish();
         });
     }
-
     private void registerUser() {
         String name = nameField.getText().toString().trim();
         String age = ageField.getText().toString().trim();
         String email = emailField.getText().toString().trim();
         String password = passwordField.getText().toString().trim();
-
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(age) || TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
             Toast.makeText(this, "Enter all fields", Toast.LENGTH_SHORT).show();
             return;
         }
-
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 String uid = mAuth.getCurrentUser().getUid();
-                Map<String, Object> user = new HashMap<>();
+                Map<String,Object> user = new HashMap<>();
                 user.put("name", name);
                 user.put("age", age);
                 user.put("email", email);
-                db.collection("users").document(uid).set(user).addOnSuccessListener(aVoid ->
-                        Toast.makeText(this, "Signup Successful", Toast.LENGTH_SHORT).show()
-                );
+                db.collection("users").document(uid).set(user);
                 startActivity(new Intent(SignupActivity.this, HomeActivity.class));
                 finish();
             } else {
-                Toast.makeText(this, "Signup Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Signup Failed: " + (task.getException() != null ? task.getException().getMessage() : "error"), Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -7,25 +7,24 @@ import android.os.Handler;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-
 import com.neeravtanay.neuratask.R;
 
 public class SplashActivity extends Activity {
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void onCreate(Bundle s) {
+        super.onCreate(s);
         setContentView(R.layout.activity_splash);
-
-        ImageView splashLogo = findViewById(R.id.splashLogo);
-        Animation anim = AnimationUtils.loadAnimation(this, R.anim.splash_logo_anim);
-        splashLogo.startAnimation(anim);
-
+        ImageView logo = findViewById(R.id.splashLogo);
+        Animation a = AnimationUtils.loadAnimation(this, R.anim.splash_logo_anim);
+        logo.startAnimation(a);
         new Handler().postDelayed(() -> {
-            Intent intent = new Intent(SplashActivity.this, HomeActivity.class);
-            startActivity(intent);
+            if (com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser() != null) {
+                startActivity(new Intent(SplashActivity.this, HomeActivity.class));
+            } else {
+                startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+            }
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             finish();
-        }, 2000);
+        }, 1600);
     }
 }
