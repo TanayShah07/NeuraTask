@@ -1,0 +1,79 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:background="@drawable/rounded_dialog_bg"
+            android:elevation="6dp"
+            android:clipToPadding="false"
+            tools:ignore="UselessParent">
+
+            <Button
+                android:id="@+id/btnBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="← Back"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/purple_500"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:layout_marginBottom="24dp"
+                android:textAllCaps="false" />
+
+            <TextView
+                android:id="@+id/tvAboutTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="About NeuraTask"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/tvAboutContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="NeuraTask is an advanced assignment management app designed to simplify your student life.\n\nFeatures:\n• Add assignments manually\n• AI-assisted assignment filling\n• Track deadlines and priorities effortlessly"
+                android:textSize="16sp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/black"
+                android:layout_marginBottom="24dp" />
+
+            <TextView
+                android:id="@+id/tvDevelopers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Developers:\nTanay Shah: +91 9870786749\nNeerav Reddy: +91 9820957345"
+                android:textSize="16sp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/black"
+                android:layout_marginBottom="32dp" />
+
+            <Button
+                android:id="@+id/btnLoginFromAbout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Login"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/purple_500"
+                android:padding="12dp"
+                android:textAllCaps="false" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    android:background="@color/white">
+    android:background="@color/background_light">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,7 +11,7 @@
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
-        <!-- Profile Image -->
+        <!-- Profile Image with elevation and circle background -->
         <ImageView
             android:id="@+id/ivProfile"
             android:layout_width="120dp"
@@ -20,7 +20,8 @@
             android:scaleType="centerCrop"
             android:layout_marginBottom="16dp"
             android:background="@drawable/profile_circle_bg"
-            android:padding="4dp" />
+            android:padding="4dp"
+            android:elevation="4dp"/>
 
         <!-- Name -->
         <TextView
@@ -28,9 +29,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Your Name"
-            android:textSize="20sp"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="8dp"/>
 
         <!-- Email -->
         <TextView
@@ -39,7 +41,8 @@
             android:layout_height="wrap_content"
             android:text="your.email@example.com"
             android:textSize="16sp"
-            android:layout_marginBottom="8dp" />
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="4dp"/>
 
         <!-- Age -->
         <TextView
@@ -48,7 +51,8 @@
             android:layout_height="wrap_content"
             android:text="Age"
             android:textSize="16sp"
-            android:layout_marginBottom="24dp" />
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="24dp"/>
 
         <!-- Buttons -->
         <LinearLayout
@@ -64,9 +68,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Change Password"
-                android:backgroundTint="@color/purple_500"
-                android:textColor="@android:color/white"
-                android:layout_marginEnd="8dp" />
+                android:backgroundTint="?attr/colorPrimary"
+                android:textColor="?android:attr/textColorPrimaryInverse"
+                android:layout_marginEnd="8dp"
+                android:padding="12dp"/>
 
             <Button
                 android:id="@+id/btnLogout"
@@ -74,9 +79,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Logout"
-                android:backgroundTint="@color/red_600"
-                android:textColor="@android:color/white"
-                android:layout_marginStart="8dp" />
+                android:backgroundTint="?attr/colorError"
+                android:textColor="?android:attr/textColorPrimaryInverse"
+                android:layout_marginStart="8dp"
+                android:padding="12dp"/>
         </LinearLayout>
 
     </LinearLayout>

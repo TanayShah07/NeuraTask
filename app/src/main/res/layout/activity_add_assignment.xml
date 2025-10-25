@@ -1,52 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:padding="16dp">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="?android:colorBackground"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add New Assignment"
+            android:textAppearance="?android:textAppearanceLarge"
+            android:textStyle="bold"
+            android:textColor="?android:textColorPrimary"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Title -->
         <EditText
             android:id="@+id/etTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Title"/>
+            android:hint="Title"
+            android:backgroundTint="?attr/colorPrimary"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:inputType="textCapSentences" />
+
+        <!-- Description -->
         <EditText
             android:id="@+id/etDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Description"
+            android:backgroundTint="?attr/colorPrimary"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
             android:inputType="textMultiLine"
-            android:lines="3"/>
+            android:minLines="3" />
+
+        <!-- Subject -->
         <EditText
             android:id="@+id/etSubject"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Subject"/>
-        <Button
-            android:id="@+id/btnPickDate"
+            android:hint="Subject"
+            android:backgroundTint="?attr/colorPrimary"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:inputType="textCapWords" />
+
+        <!-- Date & Time pickers -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pick Date"/>
-        <Button
-            android:id="@+id/btnPickTime"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:layout_marginBottom="8dp">
+
+            <Button
+                android:id="@+id/btnPickDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📅 Pick Date" />
+
+            <Button
+                android:id="@+id/btnPickTime"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="⏰ Pick Time" />
+        </LinearLayout>
+
+        <!-- Selected Date-Time -->
+        <TextView
+            android:id="@+id/tvPickedDateTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pick Time"/>
+            android:text="No date/time selected"
+            android:textAlignment="center"
+            android:textColor="?android:textColorSecondary"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Estimated time -->
         <EditText
             android:id="@+id/etEstimated"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Estimated minutes"
-            android:inputType="number"/>
-        <Spinner
-            android:id="@+id/spinnerPriority"
+            android:backgroundTint="?attr/colorPrimary"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:inputType="number" />
+
+        <!-- Priority Spinner -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Priority:"
+                android:textColor="?android:textColorPrimary"
+                android:layout_marginEnd="8dp" />
+
+            <Spinner
+                android:id="@+id/spinnerPriority"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Buttons -->
         <Button
             android:id="@+id/btnAIHelp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Let AI help fill this"/>
+            android:text="🤖 Let AI help fill this"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="?attr/colorSecondary" />
+
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Save"/>
+            android:text="💾 Save Assignment"
+            android:backgroundTint="?attr/colorPrimary"
+            android:textColor="@android:color/white" />
+
     </LinearLayout>
 </ScrollView>

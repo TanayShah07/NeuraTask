@@ -8,16 +8,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.FirebaseTooManyRequestsException;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.neeravtanay.neuratask.R;
 
 public class LoginActivity extends AppCompatActivity {
@@ -26,8 +23,8 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private TextView signupRedirect;
     private FirebaseAuth mAuth;
-    private ProgressDialog progressDialog;
     private FirebaseFirestore db;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +43,6 @@ public class LoginActivity extends AppCompatActivity {
         progressDialog.setMessage("Signing in...");
         progressDialog.setCancelable(false);
 
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-            finish();
-        }
-
         loginButton.setOnClickListener(v -> loginUser());
         signupRedirect.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, SignupActivity.class));
@@ -62,42 +53,71 @@ public class LoginActivity extends AppCompatActivity {
     private void loginUser() {
         String email = emailField.getText().toString().trim();
         String password = passwordField.getText().toString().trim();
-
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
             Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
         progressDialog.show();
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
+                    progressDialog.dismiss();
+                    if (task.isSuccessful()) {
+                        String uid = mAuth.getCurrentUser().getUid();
+                        db.collection("users").document(uid)
+                                .get()
+                                .addOnSuccessListener(doc -> {
+                                    UserProfile profile;
+                                    if (!doc.exists()) {
+                                        profile = new UserProfile(email);
+                                        db.collection("users").document(uid).set(profile);
+                                    } else {
+                                        profile = new UserProfile(doc);
+                                    }
 
-        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
-            progressDialog.dismiss();
-            if (task.isSuccessful()) {
-                String uid = mAuth.getCurrentUser().getUid();
-                db.collection("users").document(uid).get().addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        String name = doc.getString("name");
-                        String age = doc.getString("age");
-
-                        Intent i = new Intent(LoginActivity.this, HomeActivity.class);
-                        i.putExtra("name", name);
-                        i.putExtra("age", age);
-                        startActivity(i);
-                        finish();
+                                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                                    intent.putExtra("userProfile", profile);
+                                    startActivity(intent);
+                                    finish();
+                                })
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(this, "Failed to fetch profile", Toast.LENGTH_SHORT).show());
+                    } else {
+                        Exception e = task.getException();
+                        if (e instanceof FirebaseAuthInvalidUserException) {
+                            Toast.makeText(this, "No account found with this email", Toast.LENGTH_SHORT).show();
+                        } else if (e instanceof FirebaseAuthInvalidCredentialsException) {
+                            Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
+                        } else if (e instanceof FirebaseTooManyRequestsException) {
+                            Toast.makeText(this, "Too many attempts. Try again later.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Login failed: " + (e != null ? e.getMessage() : "Unknown error"), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
-            } else {
-                Exception e = task.getException();
-                if (e instanceof FirebaseAuthInvalidUserException) {
-                    Toast.makeText(this, "No account found with this email", Toast.LENGTH_SHORT).show();
-                } else if (e instanceof FirebaseAuthInvalidCredentialsException) {
-                    Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
-                } else if (e instanceof FirebaseTooManyRequestsException) {
-                    Toast.makeText(this, "Too many attempts. Try again later.", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Login failed: " + (e != null ? e.getMessage() : "Unknown error"), Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+    }
+
+    public static class UserProfile implements java.io.Serializable {
+        public String email;
+        public String name;
+        public String age;
+        public int avatarIndex;
+
+        public UserProfile() {}
+
+        public UserProfile(String email) {
+            this.email = email;
+            this.name = "";
+            this.age = "";
+            this.avatarIndex = -1;
+        }
+
+        public UserProfile(DocumentSnapshot doc) {
+            this.email = doc.getString("email");
+            this.name = doc.getString("name") != null ? doc.getString("name") : "";
+            this.age = doc.getString("age") != null ? doc.getString("age") : "";
+            Long avatar = doc.getLong("avatarIndex");
+            this.avatarIndex = avatar != null ? avatar.intValue() : -1;
+        }
     }
 }

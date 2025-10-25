@@ -2,9 +2,10 @@ package com.neeravtanay.neuratask.repository;
 
 import android.app.Application;
 import androidx.lifecycle.LiveData;
+import com.google.firebase.auth.FirebaseAuth;
 import com.neeravtanay.neuratask.database.AppDatabase;
+import com.neeravtanay.neuratask.database.AssignmentDao;
 import com.neeravtanay.neuratask.models.AssignmentModel;
-import com.neeravtanay.neuratask.dao.AssignmentDao;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,39 +13,36 @@ import java.util.concurrent.Executors;
 public class AssignmentRepository {
 
     private final AssignmentDao dao;
+    private final String userId;
     private final ExecutorService executor;
-    private LiveData<List<AssignmentModel>> pending;
-    private LiveData<List<AssignmentModel>> completed;
-    private LiveData<List<AssignmentModel>> overdue;
 
     public AssignmentRepository(Application app) {
         AppDatabase db = AppDatabase.getInstance(app);
         dao = db.assignmentDao();
         executor = Executors.newSingleThreadExecutor();
+        userId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : "anon";
     }
 
-    // Get all pending assignments (due >= now and not completed)
+    // Get all pending assignments for current user
     public LiveData<List<AssignmentModel>> getPending() {
-        long now = System.currentTimeMillis();
-        pending = dao.getPending(now);
-        return pending;
+        return dao.getPending(userId, System.currentTimeMillis());
     }
 
-    // Get all completed assignments
+    // Get all completed assignments for current user
     public LiveData<List<AssignmentModel>> getCompleted() {
-        completed = dao.getCompleted(true);
-        return completed;
+        return dao.getCompleted(userId, true);
     }
 
-    // Get all overdue assignments (due < now and not completed)
+    // Get all overdue assignments for current user
     public LiveData<List<AssignmentModel>> getOverdue() {
-        long now = System.currentTimeMillis();
-        overdue = dao.getOverdue(now);
-        return overdue;
+        return dao.getOverdue(userId, System.currentTimeMillis());
     }
 
     // Insert assignment asynchronously
     public void insert(AssignmentModel assignment) {
+        assignment.setOwnerId(userId);
         executor.execute(() -> dao.insert(assignment));
     }
 
@@ -58,12 +56,12 @@ public class AssignmentRepository {
         executor.execute(() -> dao.delete(assignment));
     }
 
-    // Attempt to sync unsynced assignments (placeholder)
+    // Attempt to sync unsynced assignments for current user
     public void attemptSyncUnsynced() {
         executor.execute(() -> {
-            List<AssignmentModel> unsynced = dao.getUnsynced();
+            List<AssignmentModel> unsynced = dao.getUnsynced(userId);
             for (AssignmentModel a : unsynced) {
-                // Sync logic with server/Firestore goes here
+                // Firestore sync logic goes here...
                 // After successful sync:
                 a.setSynced(true);
                 dao.update(a);
