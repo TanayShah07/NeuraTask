@@ -1,30 +1,30 @@
 package com.neeravtanay.neuratask.activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.ImageView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.neeravtanay.neuratask.R;
 
-public class SplashActivity extends Activity {
+public class SplashActivity extends AppCompatActivity {
+
+    private static final int SPLASH_DELAY = 2000; // 2 seconds
+
     @Override
-    protected void onCreate(Bundle s) {
-        super.onCreate(s);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        ImageView logo = findViewById(R.id.splashLogo);
-        Animation a = AnimationUtils.loadAnimation(this, R.anim.splash_logo_anim);
-        logo.startAnimation(a);
+
         new Handler().postDelayed(() -> {
-            if (com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser() != null) {
-                startActivity(new Intent(SplashActivity.this, HomeActivity.class));
-            } else {
-                startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-            }
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            Intent i = new Intent(SplashActivity.this,
+                    user != null ? HomeActivity.class : LoginActivity.class);
+            startActivity(i);
             finish();
-        }, 1600);
+        }, SPLASH_DELAY);
     }
 }

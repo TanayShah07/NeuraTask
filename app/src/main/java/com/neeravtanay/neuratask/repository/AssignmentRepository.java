@@ -1,64 +1,73 @@
 package com.neeravtanay.neuratask.repository;
 
-import android.content.Context;
+import android.app.Application;
 import androidx.lifecycle.LiveData;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
 import com.neeravtanay.neuratask.database.AppDatabase;
 import com.neeravtanay.neuratask.models.AssignmentModel;
-import java.util.HashMap;
+import com.neeravtanay.neuratask.dao.AssignmentDao;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class AssignmentRepository {
-    private final AppDatabase db;
-    private final FirebaseFirestore fs;
-    public AssignmentRepository(Context ctx) {
-        db = AppDatabase.getInstance(ctx);
-        fs = FirebaseFirestore.getInstance();
+
+    private final AssignmentDao dao;
+    private final ExecutorService executor;
+    private LiveData<List<AssignmentModel>> pending;
+    private LiveData<List<AssignmentModel>> completed;
+    private LiveData<List<AssignmentModel>> overdue;
+
+    public AssignmentRepository(Application app) {
+        AppDatabase db = AppDatabase.getInstance(app);
+        dao = db.assignmentDao();
+        executor = Executors.newSingleThreadExecutor();
     }
+
+    // Get all pending assignments (due >= now and not completed)
     public LiveData<List<AssignmentModel>> getPending() {
-        return db.assignmentDao().getPending(System.currentTimeMillis());
+        long now = System.currentTimeMillis();
+        pending = dao.getPending(now);
+        return pending;
     }
+
+    // Get all completed assignments
     public LiveData<List<AssignmentModel>> getCompleted() {
-        return db.assignmentDao().getCompleted();
+        completed = dao.getCompleted(true);
+        return completed;
     }
+
+    // Get all overdue assignments (due < now and not completed)
     public LiveData<List<AssignmentModel>> getOverdue() {
-        return db.assignmentDao().getOverdue(System.currentTimeMillis());
+        long now = System.currentTimeMillis();
+        overdue = dao.getOverdue(now);
+        return overdue;
     }
-    public void insert(AssignmentModel a) {
-        if (a.id == null) a.id = UUID.randomUUID().toString();
-        a.synced = false;
-        a.ownerId = a.ownerId == null ? "anon" : a.ownerId;
-        Executors.newSingleThreadExecutor().execute(() -> db.assignmentDao().insert(a));
-        syncToFirestore(a);
+
+    // Insert assignment asynchronously
+    public void insert(AssignmentModel assignment) {
+        executor.execute(() -> dao.insert(assignment));
     }
-    public void update(AssignmentModel a) {
-        a.synced = false;
-        Executors.newSingleThreadExecutor().execute(() -> db.assignmentDao().update(a));
-        syncToFirestore(a);
+
+    // Update assignment asynchronously
+    public void update(AssignmentModel assignment) {
+        executor.execute(() -> dao.update(assignment));
     }
-    private void syncToFirestore(AssignmentModel a) {
-        Map<String,Object> map = new HashMap<>();
-        map.put("id", a.id);
-        map.put("title", a.title);
-        map.put("description", a.description);
-        map.put("dueTimestamp", a.dueTimestamp);
-        map.put("isCompleted", a.isCompleted);
-        map.put("priorityManual", a.priorityManual);
-        map.put("estimatedMinutes", a.estimatedMinutes);
-        map.put("ownerId", a.ownerId);
-        fs.collection("assignments").document(a.id).set(map, SetOptions.merge()).addOnSuccessListener(unused -> {
-            a.synced = true;
-            Executors.newSingleThreadExecutor().execute(() -> db.assignmentDao().update(a));
-        });
+
+    // Delete assignment asynchronously
+    public void delete(AssignmentModel assignment) {
+        executor.execute(() -> dao.delete(assignment));
     }
+
+    // Attempt to sync unsynced assignments (placeholder)
     public void attemptSyncUnsynced() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            List<AssignmentModel> list = db.assignmentDao().getUnsynced();
-            for (AssignmentModel a : list) syncToFirestore(a);
+        executor.execute(() -> {
+            List<AssignmentModel> unsynced = dao.getUnsynced();
+            for (AssignmentModel a : unsynced) {
+                // Sync logic with server/Firestore goes here
+                // After successful sync:
+                a.setSynced(true);
+                dao.update(a);
+            }
         });
     }
 }

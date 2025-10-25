@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">NeuraTask</string>
+    <string name="no_tasks">No tasks yet! Enjoy your free time 😊</string>
+    <string name="recaptcha_site_key">6Ld0XPMrAAAAAJS951ZYZPX05QEKSxt-5RcAdLUW</string>
+
 </resources>

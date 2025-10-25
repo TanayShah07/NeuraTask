@@ -7,13 +7,16 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.neeravtanay.neuratask.R;
 import com.neeravtanay.neuratask.models.AssignmentModel;
 import com.neeravtanay.neuratask.utils.AIHelper;
-import com.neeravtanay.neuratask.viewmodel.AssignmentViewModel;
+import com.neeravtanay.neuratask.viewmodels.AssignmentViewModel;
+
 import java.util.Calendar;
 
 public class AddAssignmentActivity extends AppCompatActivity {
@@ -22,10 +25,12 @@ public class AddAssignmentActivity extends AppCompatActivity {
     Spinner spinnerPriority;
     long pickedDateTime = 0;
     AssignmentViewModel vm;
+
     @Override
-    protected void onCreate(Bundle s) {
-        super.onCreate(s);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_assignment);
+
         etTitle = findViewById(R.id.etTitle);
         etDescription = findViewById(R.id.etDescription);
         etSubject = findViewById(R.id.etSubject);
@@ -35,8 +40,13 @@ public class AddAssignmentActivity extends AppCompatActivity {
         btnAIHelp = findViewById(R.id.btnAIHelp);
         btnSave = findViewById(R.id.btnSave);
         spinnerPriority = findViewById(R.id.spinnerPriority);
-        spinnerPriority.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new Integer[]{1,2,3,4,5}));
+
+        spinnerPriority.setAdapter(new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item,
+                new Integer[]{1,2,3,4,5}));
+
         vm = new ViewModelProvider(this).get(AssignmentViewModel.class);
+
         btnPickDate.setOnClickListener(v -> {
             Calendar c = Calendar.getInstance();
             new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
@@ -45,6 +55,7 @@ public class AddAssignmentActivity extends AppCompatActivity {
                 pickedDateTime = cc.getTimeInMillis();
             }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
         });
+
         btnPickTime.setOnClickListener(v -> {
             Calendar c = Calendar.getInstance();
             new TimePickerDialog(this, (view, hourOfDay, minute) -> {
@@ -55,6 +66,7 @@ public class AddAssignmentActivity extends AppCompatActivity {
                 pickedDateTime = cc.getTimeInMillis();
             }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show();
         });
+
         btnAIHelp.setOnClickListener(v -> {
             String desc = etDescription.getText().toString().trim();
             if (desc.isEmpty()) {
@@ -68,18 +80,20 @@ public class AddAssignmentActivity extends AppCompatActivity {
             etEstimated.setText("60");
             spinnerPriority.setSelection(3);
         });
+
         btnSave.setOnClickListener(v -> {
             AssignmentModel a = new AssignmentModel();
-            a.id = java.util.UUID.randomUUID().toString();
-            a.title = etTitle.getText().toString().trim();
-            a.description = etDescription.getText().toString().trim();
-            a.subject = etSubject.getText().toString().trim();
-            a.estimatedMinutes = Integer.parseInt(etEstimated.getText().toString().isEmpty() ? "60" : etEstimated.getText().toString());
-            a.priorityManual = (Integer) spinnerPriority.getSelectedItem();
-            a.dueTimestamp = pickedDateTime == 0 ? System.currentTimeMillis() : pickedDateTime;
-            a.isCompleted = false;
-            a.ownerId = FirebaseAuth.getInstance().getCurrentUser() == null ? "anon" : FirebaseAuth.getInstance().getCurrentUser().getUid();
-            a.priorityScore = AIHelper.computePriorityScore(a);
+            a.setId(java.util.UUID.randomUUID().toString()); // use setter
+            a.setTitle(etTitle.getText().toString().trim());
+            a.setDescription(etDescription.getText().toString().trim());
+            a.setSubject(etSubject.getText().toString().trim());
+            a.setEstimatedMinutes(Integer.parseInt(etEstimated.getText().toString().isEmpty() ? "60" : etEstimated.getText().toString()));
+            a.setPriorityManual((Integer) spinnerPriority.getSelectedItem());
+            a.setDueTimestamp(pickedDateTime == 0 ? System.currentTimeMillis() : pickedDateTime);
+            a.setCompleted(false);
+            a.setOwnerId(FirebaseAuth.getInstance().getCurrentUser() == null ? "anon" : FirebaseAuth.getInstance().getCurrentUser().getUid());
+            a.setPriorityScore(AIHelper.computePriorityScore(a));
+
             vm.insert(a);
             finish();
         });

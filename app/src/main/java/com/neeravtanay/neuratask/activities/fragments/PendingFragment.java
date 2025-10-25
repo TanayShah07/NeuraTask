@@ -10,25 +10,48 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.neeravtanay.neuratask.R;
 import com.neeravtanay.neuratask.adapters.AssignmentAdapter;
-import com.neeravtanay.neuratask.viewmodel.AssignmentViewModel;
+import com.neeravtanay.neuratask.models.AssignmentModel;
+import com.neeravtanay.neuratask.utils.EditTaskDialog;
+import com.neeravtanay.neuratask.viewmodels.AssignmentViewModel;
 import java.util.ArrayList;
 
 public class PendingFragment extends Fragment {
-    RecyclerView rv;
-    AssignmentAdapter adapter;
-    AssignmentViewModel vm;
+
+    private RecyclerView rv;
+    private AssignmentAdapter adapter;
+    private AssignmentViewModel viewModel;
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle s) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_pending, container, false);
+
         rv = v.findViewById(R.id.rvPending);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new AssignmentAdapter(new ArrayList<>());
-        rv.setAdapter(adapter);
-        vm = new ViewModelProvider(requireActivity()).get(AssignmentViewModel.class);
-        vm.getPending().observe(getViewLifecycleOwner(), list -> {
-            adapter.setList(list);
-            v.findViewById(R.id.tvEmpty).setVisibility(list == null || list.isEmpty() ? View.VISIBLE : View.GONE);
+
+        viewModel = new ViewModelProvider(requireActivity()).get(AssignmentViewModel.class);
+
+        adapter = new AssignmentAdapter(new ArrayList<>(), new AssignmentAdapter.AssignmentListener() {
+            @Override
+            public void onEditClicked(AssignmentModel assignment) {
+                new EditTaskDialog(requireContext(), assignment, viewModel).show();
+            }
+
+            @Override
+            public void onDeleteClicked(AssignmentModel assignment) {
+                viewModel.delete(assignment);
+            }
         });
+
+        rv.setAdapter(adapter);
+
+        viewModel.getPending().observe(getViewLifecycleOwner(), list -> {
+            adapter.setAssignments(list);
+            View emptyView = v.findViewById(R.id.tvEmpty);
+            if (emptyView != null) {
+                emptyView.setVisibility(list == null || list.isEmpty() ? View.VISIBLE : View.GONE);
+            }
+        });
+
         return v;
     }
 }
