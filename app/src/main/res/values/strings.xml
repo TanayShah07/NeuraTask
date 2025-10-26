@@ -2,5 +2,8 @@
     <string name="app_name">NeuraTask</string>
     <string name="no_tasks">No tasks yet! Enjoy your free time 😊</string>
     <string name="recaptcha_site_key">6Ld0XPMrAAAAAJS951ZYZPX05QEKSxt-5RcAdLUW</string>
-
+    <string name="homepage_screenshot">Screenshot of NeuraTask home screen showing assignment list and + button</string>
+    <string name="add_assignment_screenshot">Screenshot of Add Assignment screen with fields for title, description, due date and AI Fill button</string>
+    <string name="ai_fill_screenshot">Screenshot of AI Fill feature showing assignment details being auto-filled</string>
+    <string name="change_password_screenshot">Screenshot of Change Password screen with current and new password fields</string>
 </resources>

@@ -10,15 +10,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.neeravtanay.neuratask.R;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-
 public class AIFillActivity extends AppCompatActivity {
 
     private EditText inputDescription;
     private Button btnGenerate, btnBack;
-    private Calendar calendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +23,6 @@ public class AIFillActivity extends AppCompatActivity {
         inputDescription = findViewById(R.id.inputDescription);
         btnGenerate = findViewById(R.id.btnGenerate);
         btnBack = findViewById(R.id.btnBack);
-        calendar = Calendar.getInstance();
 
         btnBack.setOnClickListener(v -> finish());
 
@@ -40,49 +34,40 @@ public class AIFillActivity extends AppCompatActivity {
                 return;
             }
 
-            // 🧠 Simulated AI parsing (you can replace this with OpenAI API later)
+            // 🧠 Simplified AI-style parsing (Title, Subject, Description only)
             String title = generateTitle(desc);
             String subject = generateSubject(desc);
             String description = "Auto-filled: " + desc;
-            String priority = generatePriority(desc);
 
-            // Generate random or current date/time
-            String date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(calendar.getTime());
-            String time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.getTime());
-
-            // Send back to AddAssignmentActivity
+            // Send only relevant data (no date/time/priority AI parsing)
             Intent resultIntent = new Intent();
             resultIntent.putExtra("title", title);
             resultIntent.putExtra("description", description);
             resultIntent.putExtra("subject", subject);
-            resultIntent.putExtra("date", date);
-            resultIntent.putExtra("time", time);
-            resultIntent.putExtra("priority", priority);
 
             setResult(RESULT_OK, resultIntent);
             finish();
         });
     }
 
-    // Dummy logic for now (you can replace later with AI)
+    // --- Simplified AI logic ---
     private String generateTitle(String input) {
-        if (input.toLowerCase().contains("math")) return "Math Assignment";
-        if (input.toLowerCase().contains("science")) return "Science Homework";
-        if (input.toLowerCase().contains("english")) return "English Essay";
+        input = input.toLowerCase();
+        if (input.contains("math")) return "Math Assignment";
+        if (input.contains("science")) return "Science Homework";
+        if (input.contains("english")) return "English Essay";
+        if (input.contains("history")) return "History Report";
+        if (input.contains("project")) return "Project Work";
         return "General Assignment";
     }
 
     private String generateSubject(String input) {
-        if (input.toLowerCase().contains("math")) return "Mathematics";
-        if (input.toLowerCase().contains("science")) return "Science";
-        if (input.toLowerCase().contains("english")) return "English";
+        input = input.toLowerCase();
+        if (input.contains("math")) return "Mathematics";
+        if (input.contains("science")) return "Science";
+        if (input.contains("english")) return "English";
+        if (input.contains("history")) return "History";
+        if (input.contains("computer")) return "Computer Science";
         return "General Studies";
-    }
-
-    private String generatePriority(String input) {
-        if (input.toLowerCase().contains("urgent")) return "5";
-        if (input.toLowerCase().contains("important")) return "4";
-        if (input.toLowerCase().contains("tomorrow")) return "3";
-        return "2";
     }
 }

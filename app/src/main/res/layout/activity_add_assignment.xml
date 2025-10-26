@@ -20,7 +20,8 @@
             android:textAppearance="?android:textAppearanceLarge"
             android:textStyle="bold"
             android:textColor="?android:textColorPrimary"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="25dp"/>
 
         <!-- Title -->
         <EditText
@@ -56,6 +57,17 @@
             android:layout_marginBottom="12dp"
             android:inputType="textCapWords" />
 
+        <!-- Manual Date-Time Note -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🕓 Please manually select the date and time of your assignment deadline below. (AI does not fill this automatically.)"
+            android:textColor="?android:textColorSecondary"
+            android:textSize="14sp"
+            android:padding="6dp"
+            android:layout_marginBottom="10dp"
+            android:background="@android:color/transparent" />
+
         <!-- Date & Time pickers -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -69,7 +81,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="📅 Pick Date" />
+                android:text="📅 Due Date" />
 
             <Button
                 android:id="@+id/btnPickTime"
@@ -77,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                android:text="⏰ Pick Time" />
+                android:text="⏰ Due Time" />
         </LinearLayout>
 
         <!-- Selected Date-Time -->
@@ -95,7 +107,7 @@
             android:id="@+id/etEstimated"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Estimated minutes"
+            android:hint="Estimated minutes to finish assignment..."
             android:backgroundTint="?attr/colorPrimary"
             android:padding="12dp"
             android:layout_marginBottom="12dp"

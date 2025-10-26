@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:text="Assignment Title"
         android:textStyle="bold"
-        android:textSize="18sp"/>
+        android:textSize="18sp"
+        android:layout_marginTop="30dp"/>
 
     <TextView
         android:id="@+id/tvSubject"

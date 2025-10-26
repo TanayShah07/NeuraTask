@@ -1,9 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:padding="16dp">
+    android:padding="16dp"
+    tools:context=".activities.AboutAppActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,6 +13,7 @@
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
+        <!-- ABOUT CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -19,7 +22,7 @@
             android:background="@drawable/rounded_dialog_bg"
             android:elevation="6dp"
             android:clipToPadding="false"
-            tools:ignore="UselessParent">
+            android:layout_marginBottom="20dp">
 
             <Button
                 android:id="@+id/btnBack"
@@ -30,6 +33,7 @@
                 android:backgroundTint="@color/purple_500"
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginBottom="24dp"
                 android:textAllCaps="false" />
 
@@ -63,17 +67,146 @@
                 android:textColor="@color/black"
                 android:layout_marginBottom="32dp" />
 
-            <Button
-                android:id="@+id/btnLoginFromAbout"
+        </LinearLayout>
+
+        <!-- TUTORIAL TITLE -->
+        <TextView
+            android:id="@+id/tvTutorialTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tutorial — How to use NeuraTask"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Screenshot 1: Home Page -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/rounded_card_light"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:id="@+id/img_ss_homepage"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:src="@drawable/homepage"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/homepage_screenshot" />
+
+            <TextView
+                android:id="@+id/tv_ss_homepage_caption"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Login"
-                android:textColor="@android:color/white"
-                android:backgroundTint="@color/purple_500"
-                android:padding="12dp"
-                android:textAllCaps="false" />
-
+                android:text="Step 1: Home — Tap the + button to add a new assignment. Swipe a task left/right to change status."
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="2dp" />
         </LinearLayout>
+
+        <!-- Screenshot 2: Add Assignment -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/rounded_card_light"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:id="@+id/img_ss_addassignment"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:src="@drawable/addassignment"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/add_assignment_screenshot" />
+
+            <TextView
+                android:id="@+id/tv_ss_add_caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Step 2: Add Assignment — Enter title, description, pick due date/time and priority. Use 'AI Fill' to auto-generate details."
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="2dp" />
+        </LinearLayout>
+
+        <!-- Screenshot 3: AI Fill -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/rounded_card_light"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:id="@+id/img_ss_aifill"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:src="@drawable/aifill"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/ai_fill_screenshot" />
+
+            <TextView
+                android:id="@+id/tv_ss_aifill_caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Step 3: AI Fill — Describe your assignment (e.g., 'Due tomorrow 7pm, write essay'). AI will populate title, due date/time and description."
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="2dp" />
+        </LinearLayout>
+
+        <!-- Screenshot 4: Change Password -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/rounded_card_light"
+            android:padding="12dp"
+            android:layout_marginBottom="20dp">
+
+            <ImageView
+                android:id="@+id/img_ss_changepass"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:src="@drawable/changepass"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/change_password_screenshot" />
+
+            <TextView
+                android:id="@+id/tv_ss_changepass_caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Step 4: Change Password — Go to Profile → Change Password. Enter current password, new password and confirm. New password must differ from the existing one."
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="2dp" />
+        </LinearLayout>
+
+
+        <Button
+            android:id="@+id/btnLoginFromAbout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Login"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/purple_500"
+            android:padding="12dp"
+            android:textAllCaps="false" />
 
     </LinearLayout>
 </ScrollView>

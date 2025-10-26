@@ -1,29 +1,44 @@
 package com.neeravtanay.neuratask.database;
 
 import android.content.Context;
+import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+
 import com.neeravtanay.neuratask.models.AssignmentModel;
+import com.neeravtanay.neuratask.models.NotificationModel;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@androidx.room.Database(entities = {AssignmentModel.class}, version = 1)
+@Database(entities = {AssignmentModel.class, NotificationModel.class}, version = 2)
 public abstract class AppDatabase extends RoomDatabase {
 
-    private static AppDatabase INSTANCE;
+    private static volatile AppDatabase INSTANCE;
 
-    // DAO
+    // DAOs
     public abstract AssignmentDao assignmentDao();
+    public abstract NotificationDao notificationDao();
 
-    // Thread pool for database operations
-    public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(4);
+    // Thread pool for async DB operations
+    public static final ExecutorService databaseWriteExecutor =
+            Executors.newFixedThreadPool(4);
 
-    // Singleton instance
-    public static synchronized AppDatabase getInstance(Context ctx) {
+    // Singleton pattern for DB instance
+    public static AppDatabase getInstance(Context context) {
         if (INSTANCE == null) {
-            INSTANCE = Room.databaseBuilder(ctx.getApplicationContext(),
-                            AppDatabase.class, "neuratask_db")
-                    .build();
+            synchronized (AppDatabase.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = Room.databaseBuilder(
+                                    context.getApplicationContext(),
+                                    AppDatabase.class,
+                                    "neuratask_db"
+                            )
+                            .fallbackToDestructiveMigration()
+                            .allowMainThreadQueries() // Safe for small sync operations
+                            .build();
+                }
+            }
         }
         return INSTANCE;
     }

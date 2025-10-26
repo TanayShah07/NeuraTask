@@ -12,18 +12,20 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.neeravtanay.neuratask.R;
 
 public class ChangePasswordActivity extends AppCompatActivity {
 
-    private EditText etPassword;
+    private EditText etPassword, etCurrentPassword;
     private ImageView ivTogglePassword;
     private Button btnSave, btnCancel;
 
     private boolean isPasswordVisible = false;
-    private String lastSavedPassword = ""; // used for cancel/restore functionality
+    private String lastSavedPassword = ""; // used for Save functionality
 
     private FirebaseUser user;
 
@@ -33,6 +35,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         setContentView(R.layout.activity_change_password);
 
         etPassword = findViewById(R.id.etPassword);
+        etCurrentPassword = findViewById(R.id.etCurrentPassword); // current password field
         ivTogglePassword = findViewById(R.id.ivTogglePassword);
         btnSave = findViewById(R.id.btnSave);
         btnCancel = findViewById(R.id.btnCancel);
@@ -65,22 +68,42 @@ public class ChangePasswordActivity extends AppCompatActivity {
             etPassword.setSelection(etPassword.getText().length());
         });
 
-        // Cancel button restores last saved password
-        btnCancel.setOnClickListener(v -> etPassword.setText(lastSavedPassword));
+        // Cancel button: close activity and go back to previous/home page
+        btnCancel.setOnClickListener(v -> finish());
 
         // Save button updates password
         btnSave.setOnClickListener(v -> {
-            String newPassword = etPassword.getText().toString().trim();
-            if (user != null && newPassword.length() >= 6) {
-                user.updatePassword(newPassword).addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(this, "Password updated!", Toast.LENGTH_SHORT).show();
-                        lastSavedPassword = newPassword;
-                        btnSave.setEnabled(false);
-                    } else {
-                        Toast.makeText(this, "Failed to update password: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
+            String currentPass = etCurrentPassword.getText().toString().trim();
+            String newPass = etPassword.getText().toString().trim();
+
+            if (newPass.equals(currentPass)) {
+                Toast.makeText(this, "New password cannot be the same as the existing password", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (user != null && newPass.length() >= 6) {
+                String email = user.getEmail();
+                if (email != null) {
+                    AuthCredential credential = EmailAuthProvider.getCredential(email, currentPass);
+                    user.reauthenticate(credential).addOnCompleteListener(authTask -> {
+                        if (authTask.isSuccessful()) {
+                            // Update password
+                            user.updatePassword(newPass).addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(this, "Password updated!", Toast.LENGTH_SHORT).show();
+                                    lastSavedPassword = newPass;
+                                    etPassword.setText("");
+                                    etCurrentPassword.setText("");
+                                    btnSave.setEnabled(false);
+                                } else {
+                                    Toast.makeText(this, "Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        } else {
+                            Toast.makeText(this, "Current password is incorrect", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             } else {
                 Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
             }

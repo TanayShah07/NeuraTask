@@ -8,16 +8,22 @@ import android.widget.*;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.neeravtanay.neuratask.R;
 import com.neeravtanay.neuratask.models.AssignmentModel;
 import com.neeravtanay.neuratask.utils.AIHelper;
 import com.neeravtanay.neuratask.viewmodels.AssignmentViewModel;
+import com.neeravtanay.neuratask.utils.NotificationWorker;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class AddAssignmentActivity extends AppCompatActivity {
 
@@ -111,7 +117,12 @@ public class AddAssignmentActivity extends AppCompatActivity {
             a.setOwnerId(FirebaseAuth.getInstance().getCurrentUser() == null ? "anon" : FirebaseAuth.getInstance().getCurrentUser().getUid());
             a.setPriorityScore(AIHelper.computePriorityScore(a));
 
+            // 🔹 Insert into DB
             vm.insert(a);
+
+            // 🔹 Schedule notification
+            scheduleAssignmentNotification(a);
+
             Toast.makeText(this, "✅ Assignment added!", Toast.LENGTH_SHORT).show();
             finish();
         });
@@ -143,12 +154,29 @@ public class AddAssignmentActivity extends AppCompatActivity {
             } catch (Exception ignored) {
             }
 
-            // 🔹 Convert date+time to timestamp (optional)
+            // 🔹 Convert date+time to timestamp
             try {
                 pickedDateTime = sdf.parse(date + " " + time).getTime();
             } catch (Exception e) {
                 pickedDateTime = System.currentTimeMillis();
             }
         }
+    }
+
+    // 🔹 Schedule notification using WorkManager
+    public void scheduleAssignmentNotification(AssignmentModel assignment) {
+        long delay = assignment.getDueTimestamp() - System.currentTimeMillis();
+        if (delay < 0) delay = 0;
+
+        Data data = new Data.Builder()
+                .putString("assignmentId", assignment.getId())
+                .build();
+
+        OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(NotificationWorker.class)
+                .setInputData(data)
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                .build();
+
+        WorkManager.getInstance(this).enqueue(work);
     }
 }

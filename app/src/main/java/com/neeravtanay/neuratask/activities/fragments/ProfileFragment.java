@@ -8,17 +8,23 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.neeravtanay.neuratask.R;
 import com.neeravtanay.neuratask.activities.ChangePasswordActivity;
-import com.neeravtanay.neuratask.activities.LoginActivity;
+
+import java.io.Serializable;
 import java.util.Random;
 
 public class ProfileFragment extends Fragment {
+
+    private static final String ARG_USER_PROFILE = "userProfile";
 
     private TextView tvName, tvEmail, tvAge;
     private Button btnLogout, btnChangePassword;
@@ -27,10 +33,18 @@ public class ProfileFragment extends Fragment {
     private FirebaseAuth auth;
 
     private final int[] avatars = {R.drawable.avatar1, R.drawable.avatar2, R.drawable.avatar3};
-    private LoginActivity.UserProfile userProfile;
+    private UserProfile userProfile;
+
+    public static ProfileFragment newInstance(UserProfile profile) {
+        ProfileFragment fragment = new ProfileFragment();
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_USER_PROFILE, profile);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_profile, container, false);
 
         tvName = v.findViewById(R.id.tvName);
@@ -43,21 +57,24 @@ public class ProfileFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
-        if (getActivity() != null && getActivity().getIntent() != null) {
-            userProfile = (LoginActivity.UserProfile) getActivity().getIntent().getSerializableExtra("userProfile");
+        // Retrieve UserProfile from arguments
+        if (getArguments() != null) {
+            userProfile = (UserProfile) getArguments().getSerializable(ARG_USER_PROFILE);
         }
 
         if (userProfile != null) {
             loadProfileFromObject();
-        } else {
+        } else if (auth.getCurrentUser() != null) {
             loadProfileFromFirestore();
         }
 
         ivProfile.setOnClickListener(v1 -> showAvatarOptions());
         btnLogout.setOnClickListener(v1 -> {
             auth.signOut();
-            startActivity(new android.content.Intent(getContext(), LoginActivity.class));
-            requireActivity().finish();
+            if (getContext() != null) {
+                startActivity(new android.content.Intent(getContext(), com.neeravtanay.neuratask.activities.LoginActivity.class));
+                requireActivity().finish();
+            }
         });
         btnChangePassword.setOnClickListener(v12 ->
                 startActivity(new android.content.Intent(getContext(), ChangePasswordActivity.class))
@@ -66,10 +83,33 @@ public class ProfileFragment extends Fragment {
         return v;
     }
 
+    private void loadProfileFromFirestore() {
+        String uid = auth.getCurrentUser().getUid();
+        db.collection("users").document(uid)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        userProfile = doc.toObject(UserProfile.class);
+                        if (userProfile != null) loadProfileFromObject();
+                    } else {
+                        int randomIndex = new Random().nextInt(avatars.length);
+                        userProfile = new UserProfile(auth.getCurrentUser().getEmail());
+                        userProfile.avatarIndex = randomIndex;
+                        db.collection("users").document(uid)
+                                .set(userProfile, SetOptions.merge());
+                        loadProfileFromObject();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(), "Failed to load profile", Toast.LENGTH_SHORT).show()
+                );
+    }
+
     private void loadProfileFromObject() {
         tvEmail.setText(userProfile.email);
-        tvName.setText(userProfile.name.isEmpty() ? "No Name" : userProfile.name);
-        tvAge.setText(userProfile.age.isEmpty() ? "" : userProfile.age);
+        tvName.setText(userProfile.name == null || userProfile.name.isEmpty() ? "No Name" : userProfile.name);
+        tvAge.setText(userProfile.age == null ? "" : userProfile.age);
+
         int avatarIndex = userProfile.avatarIndex;
         if (avatarIndex < 0 || avatarIndex >= avatars.length) {
             avatarIndex = new Random().nextInt(avatars.length);
@@ -78,25 +118,6 @@ public class ProfileFragment extends Fragment {
                     .update("avatarIndex", avatarIndex);
         }
         setAvatarDrawable(avatarIndex);
-    }
-
-    private void loadProfileFromFirestore() {
-        String uid = auth.getCurrentUser().getUid();
-        db.collection("users").document(uid)
-                .get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        userProfile = new LoginActivity.UserProfile(doc);
-                    } else {
-                        int randomIndex = new Random().nextInt(avatars.length);
-                        userProfile = new LoginActivity.UserProfile(auth.getCurrentUser().getEmail());
-                        userProfile.avatarIndex = randomIndex;
-                        db.collection("users").document(uid).set(userProfile);
-                    }
-                    loadProfileFromObject();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Failed to load profile", Toast.LENGTH_SHORT).show());
     }
 
     private void showAvatarOptions() {
@@ -124,5 +145,19 @@ public class ProfileFragment extends Fragment {
                 .load(avatars[index])
                 .circleCrop()
                 .into(ivProfile);
+    }
+
+    // Serializable UserProfile class
+    public static class UserProfile implements Serializable {
+        public String name = "";
+        public String email;
+        public String age = "";
+        public int avatarIndex = 0;
+
+        public UserProfile() {} // Firestore constructor
+
+        public UserProfile(String email) {
+            this.email = email;
+        }
     }
 }
