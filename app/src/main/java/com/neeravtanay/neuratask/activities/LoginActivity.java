@@ -13,12 +13,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.neeravtanay.neuratask.R;
+import com.neeravtanay.neuratask.activities.fragments.ProfileFragment;
 
 public class LoginActivity extends AppCompatActivity {
 
     private EditText etEmail, etPassword;
     private Button btnLogin;
-    private TextView tvSignUp;   // TextView for Sign Up redirect
+    private TextView tvSignUp;
     private FirebaseAuth auth;
     private FirebaseFirestore db;
 
@@ -27,23 +28,18 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Initialize views
         etEmail = findViewById(R.id.emailField);
         etPassword = findViewById(R.id.passwordField);
         btnLogin = findViewById(R.id.loginButton);
-        tvSignUp = findViewById(R.id.signupRedirect); // Sign Up TextView
+        tvSignUp = findViewById(R.id.signupRedirect);
 
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        // Login button click
         btnLogin.setOnClickListener(v -> loginUser());
-
-        // Sign Up redirect click
-        tvSignUp.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
-            startActivity(intent);
-        });
+        tvSignUp.setOnClickListener(v ->
+                startActivity(new Intent(LoginActivity.this, SignupActivity.class))
+        );
     }
 
     private void loginUser() {
@@ -55,16 +51,28 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Sign in with Firebase Auth
         auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
-                    // Go to OTP verification page
-                    Intent intent = new Intent(LoginActivity.this, OtpVerificationActivity.class);
-                    intent.putExtra("email", email);
-                    startActivity(intent);
+                    String uid = auth.getCurrentUser().getUid();
+
+                    db.collection("users").document(uid)
+                            .get()
+                            .addOnSuccessListener(doc -> {
+                                if (doc.exists()) {
+                                    ProfileFragment.UserProfile profile = doc.toObject(ProfileFragment.UserProfile.class);
+
+                                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                                    intent.putExtra("userProfile", profile);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Error fetching user: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Login failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Login failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }

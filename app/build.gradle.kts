@@ -59,6 +59,7 @@ dependencies {
 
     // Room (if used)
     implementation("androidx.room:room-runtime:2.6.1")
+    implementation(libs.biometric)
     kapt("androidx.room:room-compiler:2.6.1")
 
     // UI & Lifecycle
