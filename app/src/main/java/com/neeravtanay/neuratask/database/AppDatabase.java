@@ -11,35 +11,37 @@ import com.neeravtanay.neuratask.models.NotificationModel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {AssignmentModel.class, NotificationModel.class}, version = 2)
+@Database(entities = {AssignmentModel.class, NotificationModel.class}, version = 3, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
-    private static volatile AppDatabase INSTANCE;
+    // Singleton instance
+    private static volatile AppDatabase instance;
 
     // DAOs
     public abstract AssignmentDao assignmentDao();
     public abstract NotificationDao notificationDao();
 
-    // Thread pool for async DB operations
+    // Executor for background (async) DB operations
+    private static final int NUMBER_OF_THREADS = 4;
     public static final ExecutorService databaseWriteExecutor =
-            Executors.newFixedThreadPool(4);
+            Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-    // Singleton pattern for DB instance
+    // Singleton getter with synchronized double-checked locking
     public static AppDatabase getInstance(Context context) {
-        if (INSTANCE == null) {
+        if (instance == null) {
             synchronized (AppDatabase.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = Room.databaseBuilder(
+                if (instance == null) {
+                    instance = Room.databaseBuilder(
                                     context.getApplicationContext(),
                                     AppDatabase.class,
                                     "neuratask_db"
                             )
-                            .fallbackToDestructiveMigration()
-                            .allowMainThreadQueries() // Safe for small sync operations
+                            .fallbackToDestructiveMigration() // ✅ handles schema version upgrades safely
+                            .allowMainThreadQueries() // Optional — can remove if you want strict background ops
                             .build();
                 }
             }
         }
-        return INSTANCE;
+        return instance;
     }
 }

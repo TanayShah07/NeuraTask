@@ -11,13 +11,14 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
+import androidx.work.ExistingWorkPolicy;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.neeravtanay.neuratask.R;
 import com.neeravtanay.neuratask.models.AssignmentModel;
 import com.neeravtanay.neuratask.utils.AIHelper;
-import com.neeravtanay.neuratask.viewmodels.AssignmentViewModel;
 import com.neeravtanay.neuratask.utils.NotificationWorker;
+import com.neeravtanay.neuratask.viewmodels.AssignmentViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -41,7 +42,7 @@ public class AddAssignmentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_assignment);
 
-        // 🔹 Initialize UI elements
+        // 🔹 Initialize UI
         etTitle = findViewById(R.id.etTitle);
         etDescription = findViewById(R.id.etDescription);
         etSubject = findViewById(R.id.etSubject);
@@ -53,7 +54,7 @@ public class AddAssignmentActivity extends AppCompatActivity {
         spinnerPriority = findViewById(R.id.spinnerPriority);
         tvPickedDateTime = findViewById(R.id.tvPickedDateTime);
 
-        // 🔹 Priority dropdown
+        // 🔹 Priority spinner
         spinnerPriority.setAdapter(new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item,
                 new Integer[]{1, 2, 3, 4, 5}));
@@ -85,7 +86,7 @@ public class AddAssignmentActivity extends AppCompatActivity {
             }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show();
         });
 
-        // 🔹 Open AI Fill Page
+        // 🔹 AI Fill
         btnAIHelp.setOnClickListener(v -> {
             Intent i = new Intent(this, AIFillActivity.class);
             startActivityForResult(i, AI_FILL_REQUEST_CODE);
@@ -114,25 +115,27 @@ public class AddAssignmentActivity extends AppCompatActivity {
             a.setPriorityManual((Integer) spinnerPriority.getSelectedItem());
             a.setDueTimestamp(pickedDateTime == 0 ? System.currentTimeMillis() : pickedDateTime);
             a.setCompleted(false);
-            a.setOwnerId(FirebaseAuth.getInstance().getCurrentUser() == null ? "anon" : FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+            String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                    ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                    : "anon";
+
+            a.setOwnerId(uid);
             a.setPriorityScore(AIHelper.computePriorityScore(a));
 
-            // 🔹 Insert into DB
             vm.insert(a);
 
-            // 🔹 Schedule notification
-            scheduleAssignmentNotification(a);
+            scheduleAssignmentNotification(a, uid);
 
             Toast.makeText(this, "✅ Assignment added!", Toast.LENGTH_SHORT).show();
             finish();
         });
     }
 
-    // 🔹 Receive AI data and auto-fill
+    // 🔹 Receive AI autofill
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == AI_FILL_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             String title = data.getStringExtra("title");
             String desc = data.getStringExtra("description");
@@ -144,17 +147,12 @@ public class AddAssignmentActivity extends AppCompatActivity {
             etTitle.setText(title);
             etDescription.setText(desc);
             etSubject.setText(subj);
-
-            // 🔹 Combine date/time into one display
             tvPickedDateTime.setText("📅 " + date + " ⏰ " + time);
 
-            // 🔹 Set priority spinner (convert string to index)
             try {
                 spinnerPriority.setSelection(Integer.parseInt(priority) - 1);
-            } catch (Exception ignored) {
-            }
+            } catch (Exception ignored) {}
 
-            // 🔹 Convert date+time to timestamp
             try {
                 pickedDateTime = sdf.parse(date + " " + time).getTime();
             } catch (Exception e) {
@@ -163,20 +161,48 @@ public class AddAssignmentActivity extends AppCompatActivity {
         }
     }
 
-    // 🔹 Schedule notification using WorkManager
-    public void scheduleAssignmentNotification(AssignmentModel assignment) {
-        long delay = assignment.getDueTimestamp() - System.currentTimeMillis();
-        if (delay < 0) delay = 0;
+    // 🔹 Notification Scheduling with user isolation + near-time safety
+    public void scheduleAssignmentNotification(AssignmentModel assignment, String uid) {
+        long now = System.currentTimeMillis();
+        long due = assignment.getDueTimestamp();
+        long timeUntilDue = Math.max(0, due - now);
 
-        Data data = new Data.Builder()
-                .putString("assignmentId", assignment.getId())
-                .build();
+        long oneHour = TimeUnit.HOURS.toMillis(1);
+        long sixHours = TimeUnit.HOURS.toMillis(6);
+        long oneDay = TimeUnit.DAYS.toMillis(1);
 
-        OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(NotificationWorker.class)
-                .setInputData(data)
-                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                .build();
+        java.util.function.Consumer<Long> scheduleIfPositive = (delayMs) -> {
+            if (delayMs <= 0) return;
+            Data data = new Data.Builder()
+                    .putString("assignmentId", assignment.getId())
+                    .putString("userId", uid)
+                    .putString("title", assignment.getTitle())
+                    .putLong("dueTime", due)
+                    .build();
 
-        WorkManager.getInstance(this).enqueue(work);
+            OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(NotificationWorker.class)
+                    .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
+                    .setInputData(data)
+                    .addTag(uid + "_" + assignment.getId()) // unique per user
+                    .build();
+
+            WorkManager.getInstance(this).enqueueUniqueWork(
+                    uid + "_" + assignment.getId() + "_" + delayMs,
+                    ExistingWorkPolicy.REPLACE,
+                    work
+            );
+        };
+
+        // ⏱ For testing or very near deadlines (<= 1h)
+        if (timeUntilDue <= oneHour) {
+            scheduleIfPositive.accept(timeUntilDue);
+            return;
+        }
+
+        // 24h, 6h, 1h before and exact time
+        if (timeUntilDue > oneDay) scheduleIfPositive.accept(timeUntilDue - oneDay);
+        if (timeUntilDue > sixHours) scheduleIfPositive.accept(timeUntilDue - sixHours);
+        if (timeUntilDue > oneHour) scheduleIfPositive.accept(timeUntilDue - oneHour);
+        scheduleIfPositive.accept(timeUntilDue);
     }
 }

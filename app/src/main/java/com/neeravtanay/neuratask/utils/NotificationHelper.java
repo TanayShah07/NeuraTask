@@ -1,6 +1,7 @@
 package com.neeravtanay.neuratask.utils;
 
 import android.Manifest;
+import android.annotation.SuppressLint; // ✅ Correct import
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -30,6 +31,7 @@ public class NotificationHelper {
     }
 
     /** Simple notification without actions */
+    @SuppressLint("MissingPermission")
     public static void show(Context ctx, int id, String title, String text) {
         if (!hasNotificationPermission(ctx)) return;
 
@@ -43,6 +45,7 @@ public class NotificationHelper {
     }
 
     /** Actionable notification with Yes / No buttons */
+    @SuppressLint("MissingPermission")
     public static void showWithActions(Context ctx, int id, String title, String text) {
         if (!hasNotificationPermission(ctx)) return;
 
@@ -82,6 +85,7 @@ public class NotificationHelper {
     /** Check notification permission (Android 13+) */
     private static boolean hasNotificationPermission(Context ctx) {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-                ActivityCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+                ActivityCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS)
+                        == PackageManager.PERMISSION_GRANTED;
     }
 }

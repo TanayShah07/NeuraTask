@@ -53,7 +53,11 @@ public interface AssignmentDao {
     @Query("SELECT * FROM assignments WHERE id = :id LIMIT 1")
     AssignmentModel getAssignmentByIdSync(String id);
 
-    // 🔹 Get all assignments (used for global auto-notifications)
+    // 🔹 Get all assignments (used for global auto-notifications) - kept for compatibility
     @Query("SELECT * FROM assignments")
     List<AssignmentModel> getAllAssignmentsSync();
+
+    // 🔹 NEW: Get all assignments for a specific user synchronously
+    @Query("SELECT * FROM assignments WHERE ownerId = :ownerId")
+    List<AssignmentModel> getAllAssignmentsForUserSync(String ownerId);
 }
