@@ -2,9 +2,11 @@ package com.neeravtanay.neuratask.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,8 +24,10 @@ public class SignupActivity extends AppCompatActivity {
     private EditText etName, etAge, etEmail, etPassword;
     private Button btnSignup;
     private TextView tvLoginRedirect;
+    private ImageView ivTogglePassword;
     private FirebaseAuth auth;
     private FirebaseFirestore db;
+    private boolean isPasswordVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,13 +39,17 @@ public class SignupActivity extends AppCompatActivity {
         etAge = findViewById(R.id.ageField);
         etEmail = findViewById(R.id.emailField);
         etPassword = findViewById(R.id.passwordField);
+        ivTogglePassword = findViewById(R.id.ivTogglePassword);
         btnSignup = findViewById(R.id.signupButton);
         tvLoginRedirect = findViewById(R.id.loginRedirect);
 
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        // Signup button
+        // 👁️ Toggle password visibility
+        ivTogglePassword.setOnClickListener(v -> togglePasswordVisibility());
+
+        // Sign-up button action
         btnSignup.setOnClickListener(v -> signupUser());
 
         // Redirect to login page
@@ -50,6 +58,20 @@ public class SignupActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+    }
+
+    private void togglePasswordVisibility() {
+        if (isPasswordVisible) {
+            // Hide password
+            etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            ivTogglePassword.setImageResource(R.drawable.ic_eye_off);
+        } else {
+            // Show password
+            etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            ivTogglePassword.setImageResource(R.drawable.ic_eye_on);
+        }
+        etPassword.setSelection(etPassword.getText().length()); // Keep cursor at end
+        isPasswordVisible = !isPasswordVisible;
     }
 
     private void signupUser() {

@@ -25,38 +25,32 @@ public class AIFillActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
 
         btnBack.setOnClickListener(v -> finish());
-
-        btnGenerate.setOnClickListener(v -> {
-            String desc = inputDescription.getText().toString().trim();
-
-            if (desc.isEmpty()) {
-                Toast.makeText(this, "Please describe your assignment!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // 🧠 Simplified AI-style parsing (Title, Subject, Description only)
-            String title = generateTitle(desc);
-            String subject = generateSubject(desc);
-            String description = "Auto-filled: " + desc;
-
-            // Send only relevant data (no date/time/priority AI parsing)
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra("title", title);
-            resultIntent.putExtra("description", description);
-            resultIntent.putExtra("subject", subject);
-
-            setResult(RESULT_OK, resultIntent);
-            finish();
-        });
+        btnGenerate.setOnClickListener(v -> generateAutoFill());
     }
 
-    // --- Simplified AI logic ---
+    private void generateAutoFill() {
+        String desc = inputDescription.getText().toString().trim();
+        if (desc.isEmpty()) {
+            Toast.makeText(this, "Please describe your assignment!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent result = new Intent();
+        result.putExtra("title", generateTitle(desc));
+        result.putExtra("description", "Auto-filled: " + desc);
+        result.putExtra("subject", generateSubject(desc));
+        setResult(RESULT_OK, result);
+        finish();
+    }
+
     private String generateTitle(String input) {
         input = input.toLowerCase();
         if (input.contains("math")) return "Math Assignment";
         if (input.contains("science")) return "Science Homework";
         if (input.contains("english")) return "English Essay";
         if (input.contains("history")) return "History Report";
+        if (input.contains("physics")) return "Physics Assignment";
+        if (input.contains("MAD")) return "Mobile Application Development";
         if (input.contains("project")) return "Project Work";
         return "General Assignment";
     }
@@ -67,6 +61,8 @@ public class AIFillActivity extends AppCompatActivity {
         if (input.contains("science")) return "Science";
         if (input.contains("english")) return "English";
         if (input.contains("history")) return "History";
+        if (input.contains("physics")) return "Physics Assignment";
+        if (input.contains("mad")) return "Mobile Application Development";
         if (input.contains("computer")) return "Computer Science";
         return "General Studies";
     }

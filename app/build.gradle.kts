@@ -79,6 +79,7 @@ dependencies {
     // DataStore (required by Firebase)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.datastore:datastore-core:1.1.1")
+    implementation("com.google.firebase:firebase-messaging:24.0.0")
 
     // WorkManager (optional)
     implementation("androidx.work:work-runtime:2.8.1")

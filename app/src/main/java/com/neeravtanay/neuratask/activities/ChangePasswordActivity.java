@@ -21,11 +21,12 @@ import com.neeravtanay.neuratask.R;
 public class ChangePasswordActivity extends AppCompatActivity {
 
     private EditText etPassword, etCurrentPassword;
-    private ImageView ivTogglePassword;
+    private ImageView ivTogglePassword, ivToggleCurrentPassword;
     private Button btnSave, btnCancel;
 
-    private boolean isPasswordVisible = false;
-    private String lastSavedPassword = ""; // used for Save functionality
+    private boolean isNewPasswordVisible = false;
+    private boolean isCurrentPasswordVisible = false;
+    private String lastSavedPassword = ""; // For Save state tracking
 
     private FirebaseUser user;
 
@@ -34,18 +35,20 @@ public class ChangePasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
 
+        // Initialize UI components
         etPassword = findViewById(R.id.etPassword);
-        etCurrentPassword = findViewById(R.id.etCurrentPassword); // current password field
+        etCurrentPassword = findViewById(R.id.etCurrentPassword);
         ivTogglePassword = findViewById(R.id.ivTogglePassword);
+        ivToggleCurrentPassword = findViewById(R.id.ivToggleCurrentPassword);
         btnSave = findViewById(R.id.btnSave);
         btnCancel = findViewById(R.id.btnCancel);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
 
-        // Set initial password value (empty or previously saved)
+        // Restore previous password text if needed
         etPassword.setText(lastSavedPassword);
 
-        // Enable Save button only when password is modified
+        // Enable Save button only when new password changes
         etPassword.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
@@ -55,29 +58,42 @@ public class ChangePasswordActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        // Toggle password visibility
+        // 👁️ Toggle for NEW password
         ivTogglePassword.setOnClickListener(v -> {
-            if (isPasswordVisible) {
+            if (isNewPasswordVisible) {
                 etPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
                 ivTogglePassword.setImageResource(R.drawable.ic_eye_off);
             } else {
                 etPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
                 ivTogglePassword.setImageResource(R.drawable.ic_eye_on);
             }
-            isPasswordVisible = !isPasswordVisible;
+            isNewPasswordVisible = !isNewPasswordVisible;
             etPassword.setSelection(etPassword.getText().length());
         });
 
-        // Cancel button: close activity and go back to previous/home page
+        // 👁️ Toggle for CURRENT password
+        ivToggleCurrentPassword.setOnClickListener(v -> {
+            if (isCurrentPasswordVisible) {
+                etCurrentPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                ivToggleCurrentPassword.setImageResource(R.drawable.ic_eye_off);
+            } else {
+                etCurrentPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                ivToggleCurrentPassword.setImageResource(R.drawable.ic_eye_on);
+            }
+            isCurrentPasswordVisible = !isCurrentPasswordVisible;
+            etCurrentPassword.setSelection(etCurrentPassword.getText().length());
+        });
+
+        // ❌ Cancel button: close activity
         btnCancel.setOnClickListener(v -> finish());
 
-        // Save button updates password
+        // 💾 Save button: reauthenticate and update password
         btnSave.setOnClickListener(v -> {
             String currentPass = etCurrentPassword.getText().toString().trim();
             String newPass = etPassword.getText().toString().trim();
 
             if (newPass.equals(currentPass)) {
-                Toast.makeText(this, "New password cannot be the same as the existing password", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "New password cannot be the same as the current one", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -87,16 +103,15 @@ public class ChangePasswordActivity extends AppCompatActivity {
                     AuthCredential credential = EmailAuthProvider.getCredential(email, currentPass);
                     user.reauthenticate(credential).addOnCompleteListener(authTask -> {
                         if (authTask.isSuccessful()) {
-                            // Update password
                             user.updatePassword(newPass).addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
-                                    Toast.makeText(this, "Password updated!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, "Password updated successfully!", Toast.LENGTH_SHORT).show();
                                     lastSavedPassword = newPass;
                                     etPassword.setText("");
                                     etCurrentPassword.setText("");
                                     btnSave.setEnabled(false);
                                 } else {
-                                    Toast.makeText(this, "Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(this, "Update failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                                 }
                             });
                         } else {

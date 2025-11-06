@@ -18,14 +18,12 @@ public class AssignmentModel implements Serializable {
     private String title;
     private String description;
     private String subject;
-
     private long dueTimestamp;
-
     private String priority;
     private int priorityManual;
     private int estimatedMinutes;
 
-    @ColumnInfo(name = "isCompleted")  // ensures Room uses correct column name
+    @ColumnInfo(name = "isCompleted")
     private boolean isCompleted;
 
     private boolean beyondDeadline;
@@ -58,7 +56,7 @@ public class AssignmentModel implements Serializable {
         this.firestoreId = firestoreId;
     }
 
-    // 🔹 Getters & Setters
+    // --- Getters & Setters ---
     @NonNull public String getId() { return id; }
     public void setId(@NonNull String id) { this.id = id; }
 
