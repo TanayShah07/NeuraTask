@@ -124,18 +124,25 @@ Click Run ▶
 
 Enjoy your smart assignment tracker 🚀
 
-👥 Team Members
-Name	Role
-Tanay Shah	Backend Development, AI Module, Firebase Firestore Integration
-Neerav Reddy	FCM Notifications Integration, Firestore Sync, Backend Logic
+👥 **Team Members**
+| Name             | Role                                                           |
+| :--------------- | :------------------------------------------------------------- |
+| **Tanay Shah**   | Backend Development, AI Module, Firebase Firestore Integration |
+| **Neerav Reddy** | FCM Notifications Integration, Firestore Sync, Backend Logic   |
 
-📜 License
+
+
+📜 **License**
+
 This project is intended for educational use.
 You may reference or modify it for personal learning or academic projects.
 
-🧭 Conclusion
+
+🧭 **Conclusion**
+
 NeuraTask simplifies academic and personal task management through a smart yet lightweight Android experience.
 It combines Firebase’s real-time capabilities with Room’s local persistence, helping users stay organized and ahead of their deadlines.
+
 
 <div align="center">
 Made with ❤ by Tanay Shah & Neerav Reddy
